@@ -165,11 +165,8 @@ app.get('/teacher', (req, res) => {
         .map((r) => {
           const note = r.note ? escapeHtml(r.note) : '';
           const amount = r.amount ? escapeHtml(r.amount) : '';
-      // created_at은 ISO 문자열(UTC 기반)로 저장되지만,
-      // teacher 화면에서는 KST로 표시 + 디버그용으로 UTC 원문도 같이 보여줌
+      // created_at은 ISO 문자열(UTC 기반)로 저장되지만, 화면에서는 한국 시간(KST)로 표시
       const createdKST = new Date(r.created_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
-      const createdUTC = new Date(r.created_at).toISOString();
-
 
       const studentNo = r.student_no ?? '';
       return `
