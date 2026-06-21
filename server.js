@@ -115,14 +115,12 @@ app.post('/student/add', (req, res) => {
   }
 
   const studentNoNum = student_no ? Number(student_no) : null;
-  // 서버 시간 기준으로 created_at 저장(친구가 입력 시간을 조작할 수 없게)
   const now = new Date().toISOString();
 
   const stmt = db.prepare(`
     INSERT INTO milk_records (student_no, student_name, date, amount, note, created_at)
     VALUES (?, ?, ?, ?, ?, ?)
   `);
-
 
   stmt.run(
     Number.isFinite(studentNoNum) ? studentNoNum : null,
@@ -133,12 +131,10 @@ app.post('/student/add', (req, res) => {
     now
   );
 
-
   res.redirect('/student');
 });
 
 app.get('/teacher', (req, res) => {
-  // 날짜별 그룹(섹션) + 섹션 내부는 created_at 내림차순
   const rows = db
     .prepare(`
       SELECT id, student_no, student_name, date, amount, note, created_at
@@ -165,22 +161,21 @@ app.get('/teacher', (req, res) => {
         .map((r) => {
           const note = r.note ? escapeHtml(r.note) : '';
           const amount = r.amount ? escapeHtml(r.amount) : '';
-      // created_at은 ISO 문자열(UTC 기반)로 저장되지만, 화면에서는 한국 시간(KST)로 표시
-      const createdKST = new Date(r.created_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
 
-      const studentNo = r.student_no ?? '';
-      return `
+          const createdRaw = r.created_at;
+          const createdKst = new Date(r.created_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+
+          const studentNo = r.student_no ?? '';
+          return `
             <tr>
               <td style="width:70px;">${studentNo}</td>
               <td style="width:180px;">${escapeHtml(r.student_name)}</td>
               <td style="width:200px;">${amount}</td>
               <td>${note}</td>
               <td style="width:220px;">
-                <div>${createdKST}</div>
-                <div style="font-size:12px;color:#999;">UTC: ${createdUTC}</div>
+                <div>${createdKst}</div>
+                <div style="font-size:12px; color:#888; margin-top:2px;">raw: ${escapeHtml(createdRaw)}</div>
               </td>
-
-
             </tr>
           `;
         })
@@ -235,7 +230,8 @@ app.get('/teacher', (req, res) => {
       <div class="meta">
         - 날짜는 최근순 / 각 날짜 내 목록은 <b>입력 시간(created_at) 내림차순</b>으로 표시됩니다.
         <br/>
-        - 학생이 “1번, 2번, 7번…”처럼 <b>번호 고정 순서</b>로 보이게 하려면, 입력 폼에 학생 번호를 추가로 저장해야 합니다.
+        - 아래 "raw:" 값은 DB에 저장된 created_at 원본(서버에서 toISOString 결과)이고,
+          그 아래 값이 KST(Asia/Seoul)로 변환된 표시입니다.
       </div>
     </div>
 
