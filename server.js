@@ -174,7 +174,6 @@ app.get('/teacher', (req, res) => {
               <td>${note}</td>
               <td style="width:220px;">
                 <div>${createdKst}</div>
-                <div style="font-size:12px; color:#888; margin-top:2px;">raw: ${escapeHtml(createdRaw)}</div>
               </td>
             </tr>
           `;
