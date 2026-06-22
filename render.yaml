@@ -1,12 +1,10 @@
 services:
   - type: web
     name: milk-records
-    runtime: node
-    region: oregon
     plan: free
-    rootDir: .
+    region: oregon
 
-    # Dockerfile을 사용하므로 Render의 build/start 설정을 건드리지 않음
+    # Render에서 Dockerfile을 기준으로만 실행되도록 설정
     dockerfilePath: "Dockerfile"
 
     envVars:
