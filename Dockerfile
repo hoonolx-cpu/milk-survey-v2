@@ -14,5 +14,9 @@ ENV NODE_ENV=production
 # Render will provide PORT
 EXPOSE 10000
 
-CMD ["node", "server.js"]
+COPY prod-start.sh ./
+RUN chmod +x ./prod-start.sh
+
+CMD ["./prod-start.sh"]
+
 

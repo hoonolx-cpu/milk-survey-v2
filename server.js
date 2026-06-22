@@ -6,6 +6,8 @@ import { fileURLToPath } from 'url';
 const app = express();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 
+
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -23,6 +25,7 @@ db.exec(`
     note TEXT,
     created_at TEXT NOT NULL
   );
+
 
   CREATE INDEX IF NOT EXISTS idx_milk_records_student_no ON milk_records(student_no);
 
@@ -135,6 +138,8 @@ app.post('/student/add', (req, res) => {
 });
 
 app.get('/teacher', (req, res) => {
+  const serverBuildId = process.env.BUILD_ID || '';
+
   const rows = db
     .prepare(`
       SELECT id, student_no, student_name, date, amount, note, created_at
@@ -162,8 +167,23 @@ app.get('/teacher', (req, res) => {
           const note = r.note ? escapeHtml(r.note) : '';
           const amount = r.amount ? escapeHtml(r.amount) : '';
 
+          // 디버그: created_at 원본(UTC ISO)과 KST 표시 둘 다 보여줌
           const createdRaw = r.created_at;
-          const createdKst = new Date(r.created_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+          const createdKst = new Date(r.created_at)
+            .toLocaleString('ko-KR', {
+              timeZone: 'Asia/Seoul',
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit'
+            })
+            .replaceAll('. ', '-');
+
+
+
+
 
           const studentNo = r.student_no ?? '';
           return `
@@ -174,6 +194,7 @@ app.get('/teacher', (req, res) => {
               <td>${note}</td>
               <td style="width:220px;">
                 <div>${createdKst}</div>
+                <div style="font-size:11px; color:#9ca3af; margin-top:2px;">raw: ${escapeHtml(createdRaw)}</div>
               </td>
             </tr>
           `;
@@ -182,6 +203,7 @@ app.get('/teacher', (req, res) => {
 
       return `
         <section style="border:1px solid #eee; border-radius:12px; padding:14px; margin:14px 0;">
+
           <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px;">
             <h3 style="margin:0; font-size:18px;">${escapeHtml(date)}</h3>
             <div class="meta">총 ${list.length}건</div>
@@ -223,6 +245,8 @@ app.get('/teacher', (req, res) => {
     <h2>우유 마심 기록(선생님 확인)</h2>
     <p class="meta">로그인 없이 조회됩니다. (기록은 학생 입력 페이지에서 추가됩니다.)</p>
     <p><a href="/student">학생 입력 페이지로 이동</a></p>
+
+
 
     <div style="margin:14px 0; padding:12px; background:#f9fafb; border:1px solid #eee; border-radius:12px;">
       <div style="font-weight:700; margin-bottom:6px;">정렬 기준 안내</div>
